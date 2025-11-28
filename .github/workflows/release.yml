@@ -70,6 +70,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history and tags
 
       - name: Validate version format
         run: |
@@ -86,6 +88,14 @@ jobs:
             echo "Error: Tag ${{ inputs.version }} already exists"
             exit 1
           fi
+
+      - name: Get previous tag for release notes
+        id: prev_tag
+        run: |
+          # Get the most recent tag before we create the new one
+          PREV_TAG=$(git tag -l --sort=-v:refname | head -n 1)
+          echo "prev_tag=${PREV_TAG}" >> $GITHUB_OUTPUT
+          echo "Previous tag: ${PREV_TAG:-none (first release)}"
 
       - name: Create Git tag
         run: |
@@ -106,14 +116,25 @@ jobs:
       - name: Generate release notes
         id: release_notes
         run: |
-          # Get the previous tag
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          # Extract project name from first H1 heading in README.md
+          PROJECT_NAME=$(grep -m 1 '^# ' README.md | sed 's/^# //')
+
+          # Fall back to repo name if not found
+          if [ -z "$PROJECT_NAME" ]; then
+            PROJECT_NAME="${{ github.event.repository.name }}"
+          fi
+
+          REPO_URL="https://github.com/${{ github.repository }}"
+
+          # Use the previous tag we captured before creating the new tag
+          PREV_TAG="${{ steps.prev_tag.outputs.prev_tag }}"
+
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "## ${PROJECT_NAME} ${{ inputs.version }}" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
 
           if [ -z "$PREV_TAG" ]; then
             # First release
-            echo "notes<<EOF" >> $GITHUB_OUTPUT
-            echo "## PathVars ${{ inputs.version }}" >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
             echo "Initial release of go-pathvars - URL path template parsing and routing with rich type validation." >> $GITHUB_OUTPUT
             echo "" >> $GITHUB_OUTPUT
             echo "### Features" >> $GITHUB_OUTPUT
@@ -128,21 +149,21 @@ jobs:
             echo "- Fuzz testing with 84 seed cases for parsing, 33 for matching" >> $GITHUB_OUTPUT
             echo "- Corpus regression tests for CI/CD" >> $GITHUB_OUTPUT
             echo "" >> $GITHUB_OUTPUT
+            echo "### Commits" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            git log --pretty=format:"- [**%h**](${REPO_URL}/commit/%H) - %s (%an, %ar)%n" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
             echo "See [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md) for full documentation." >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
           else
-            # Subsequent releases - generate from commits
-            echo "notes<<EOF" >> $GITHUB_OUTPUT
-            echo "## PathVars ${{ inputs.version }}" >> $GITHUB_OUTPUT
+            # Subsequent releases - show commits since last tag
+            echo "### Commits" >> $GITHUB_OUTPUT
             echo "" >> $GITHUB_OUTPUT
-            echo "### Changes since $PREV_TAG" >> $GITHUB_OUTPUT
+            git log ${PREV_TAG}..HEAD --pretty=format:"- [**%h**](${REPO_URL}/commit/%H) - %s (%an, %ar)%n" >> $GITHUB_OUTPUT
             echo "" >> $GITHUB_OUTPUT
-            git log ${PREV_TAG}..HEAD --pretty=format:"- %s" >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            echo "**Full Changelog**: https://github.com/mikeschinkel/go-pathvars/compare/${PREV_TAG}...${{ inputs.version }}" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            echo "**Full Changelog**: ${REPO_URL}/compare/${PREV_TAG}...${{ inputs.version }}" >> $GITHUB_OUTPUT
           fi
+
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
