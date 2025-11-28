@@ -1,0 +1,155 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v0.1.1)'
+        required: true
+        type: string
+
+env:
+  GO_VERSION: '1.25'
+  GOEXPERIMENT: jsonv2
+
+jobs:
+  # Re-run all tests to ensure current commit is good
+  test:
+    name: Test Before Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run unit tests
+        run: GOEXPERIMENT=${{ env.GOEXPERIMENT }} go test -v -race ./...
+
+      - name: Run fuzz corpus regression tests
+        run: GOEXPERIMENT=${{ env.GOEXPERIMENT }} go test -v -run=TestFuzzCorpus ./test
+
+      - name: Build examples
+        run: |
+          for example in basic_routing rest_api; do
+            cd examples/$example
+            go mod init example || true
+            go mod edit -replace github.com/mikeschinkel/go-pathvars=../..
+            GOEXPERIMENT=${{ env.GOEXPERIMENT }} go mod tidy
+            GOEXPERIMENT=${{ env.GOEXPERIMENT }} go build -v .
+            cd ../..
+          done
+
+  # Only runs if tests pass
+  release:
+    name: Create Release
+    needs: test
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "Error: Version must match format v0.0.0 or v0.0.0-suffix"
+            echo "Got: $VERSION"
+            exit 1
+          fi
+
+      - name: Check if tag already exists
+        run: |
+          if git rev-parse "${{ inputs.version }}" >/dev/null 2>&1; then
+            echo "Error: Tag ${{ inputs.version }} already exists"
+            exit 1
+          fi
+
+      - name: Create Git tag
+        run: |
+          # Get the actual user email from GitHub API
+          USER_EMAIL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/users/${{ github.actor }} | jq -r '.email // empty')
+
+          # Fall back to noreply email if user hasn't made their email public
+          if [ -z "$USER_EMAIL" ] || [ "$USER_EMAIL" = "null" ]; then
+            USER_EMAIL="${{ github.actor }}@users.noreply.github.com"
+          fi
+
+          git config user.name "${{ github.actor }}"
+          git config user.email "$USER_EMAIL"
+          git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
+          git push origin "${{ inputs.version }}"
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$PREV_TAG" ]; then
+            # First release
+            echo "notes<<EOF" >> $GITHUB_OUTPUT
+            echo "## PathVars ${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "Initial release of go-pathvars - URL path template parsing and routing with rich type validation." >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "### Features" >> $GITHUB_OUTPUT
+            echo "- Declarative path template syntax with types and constraints" >> $GITHUB_OUTPUT
+            echo "- Built-in parameter types (int, string, uuid, slug, date, etc.)" >> $GITHUB_OUTPUT
+            echo "- Rich constraint system (range, length, enum, regex, format)" >> $GITHUB_OUTPUT
+            echo "- Query parameter support with defaults and optional values" >> $GITHUB_OUTPUT
+            echo "- Comprehensive fuzz testing with zero panics, zero infinite loops" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "### Testing" >> $GITHUB_OUTPUT
+            echo "- ~90% unit test coverage" >> $GITHUB_OUTPUT
+            echo "- Fuzz testing with 84 seed cases for parsing, 33 for matching" >> $GITHUB_OUTPUT
+            echo "- Corpus regression tests for CI/CD" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "See [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md) for full documentation." >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            # Subsequent releases - generate from commits
+            echo "notes<<EOF" >> $GITHUB_OUTPUT
+            echo "## PathVars ${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "### Changes since $PREV_TAG" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            git log ${PREV_TAG}..HEAD --pretty=format:"- %s" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "**Full Changelog**: https://github.com/mikeschinkel/go-pathvars/compare/${PREV_TAG}...${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.version }}
+          name: ${{ inputs.version }}
+          body: ${{ steps.release_notes.outputs.notes }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
