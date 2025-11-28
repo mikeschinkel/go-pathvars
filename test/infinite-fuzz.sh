@@ -63,7 +63,8 @@ discover_fuzz_targets() {
         targets+=("$line")
     done < <(grep -h "^func Fuzz" ./*_test.go 2>/dev/null | sed 's/func \(Fuzz[^(]*\).*/\1/' | sort -u)
 
-    echo "${targets[@]}"
+    # Print each target on a separate line
+    printf '%s\n' "${targets[@]}"
 }
 
 # Usage function
@@ -162,7 +163,11 @@ fuzz_target() {
         echo "[${target}] Starting fuzz run #${run_count} at $(date)"
 
         # Run go test with GOEXPERIMENT if set in environment
-        ${GOEXPERIMENT:+GOEXPERIMENT=$GOEXPERIMENT} go test -run=^$ -fuzz=^${target}$
+        if [ -n "${GOEXPERIMENT:-}" ]; then
+            GOEXPERIMENT="$GOEXPERIMENT" go test -run=^$ -fuzz=^${target}$
+        else
+            go test -run=^$ -fuzz=^${target}$
+        fi
         status=$?
 
         echo "[${target}] Fuzz run #${run_count} finished with status ${status} at $(date)"
@@ -181,7 +186,10 @@ fuzz_target() {
 if [ -z "$TARGETS" ]; then
     # Auto-discover Fuzz functions
     echo "Auto-discovering fuzz targets..."
-    FUZZ_TARGETS=($(discover_fuzz_targets))
+    FUZZ_TARGETS=()
+    while IFS= read -r target; do
+        FUZZ_TARGETS+=("$target")
+    done < <(discover_fuzz_targets)
 
     if [ ${#FUZZ_TARGETS[@]} -eq 0 ]; then
         echo "Error: No Fuzz* functions found in *_test.go files"
