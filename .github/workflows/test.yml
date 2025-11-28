@@ -42,7 +42,8 @@ jobs:
         run: GOEXPERIMENT=${{ env.GOEXPERIMENT }} go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
 
       - name: Run fuzz corpus regression tests
-        run: GOEXPERIMENT=${{ env.GOEXPERIMENT }} go test -v -run=TestFuzzCorpus ./test
+        working-directory: test
+        run: GOEXPERIMENT=${{ env.GOEXPERIMENT }} go test -v -run=TestFuzzCorpus
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
