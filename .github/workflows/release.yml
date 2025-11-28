@@ -143,36 +143,13 @@ jobs:
             echo "" >> $GITHUB_OUTPUT
           fi
 
-          if [ -z "$PREV_TAG" ]; then
-            # First release
-            echo "Initial release of go-pathvars - URL path template parsing and routing with rich type validation." >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            echo "### Features" >> $GITHUB_OUTPUT
-            echo "- Declarative path template syntax with types and constraints" >> $GITHUB_OUTPUT
-            echo "- Built-in parameter types (int, string, uuid, slug, date, etc.)" >> $GITHUB_OUTPUT
-            echo "- Rich constraint system (range, length, enum, regex, format)" >> $GITHUB_OUTPUT
-            echo "- Query parameter support with defaults and optional values" >> $GITHUB_OUTPUT
-            echo "- Comprehensive fuzz testing with zero panics, zero infinite loops" >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            echo "### Testing" >> $GITHUB_OUTPUT
-            echo "- ~90% unit test coverage" >> $GITHUB_OUTPUT
-            echo "- Fuzz testing with 84 seed cases for parsing, 33 for matching" >> $GITHUB_OUTPUT
-            echo "- Corpus regression tests for CI/CD" >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            echo "### Commits" >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            git log --pretty=format:"- [**%h**](${REPO_URL}/commit/%H) - %s (%an, %ar)%n" >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            echo "See [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md) for full documentation." >> $GITHUB_OUTPUT
-          else
-            # Subsequent releases - show commits since last tag
-            echo "### Commits" >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            git log ${PREV_TAG}..HEAD --pretty=format:"- [**%h**](${REPO_URL}/commit/%H) - %s (%an, %ar)%n" >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            echo "**Full Changelog**: ${REPO_URL}/compare/${PREV_TAG}...${{ inputs.version }}" >> $GITHUB_OUTPUT
-          fi
-
+         
+          echo "### Commits" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          git log ${PREV_TAG}..HEAD --pretty=format:"- [**%h**](${REPO_URL}/commit/%H) - %s (%an, %ar)" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "**Full Changelog**: ${REPO_URL}/compare/${PREV_TAG}...${{ inputs.version }}" >> $GITHUB_OUTPUT
+       
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
