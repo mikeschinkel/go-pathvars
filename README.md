@@ -10,13 +10,13 @@
 
 Most Go routing libraries require verbose handler registration or lack type validation. **go-pathvars** provides:
 
-✅ **Declarative routing** with templates like `GET /users/{id:int}/posts/{slug:slug:length[5..50]}`
-✅ **Rich type system** - 11+ built-in types with extensible validation
-✅ **Powerful constraints** - Range, length, regex, enum, format, and more
-✅ **Developer-friendly errors** - Clear messages with suggestions for fixes
-✅ **Zero dependencies** - Only Go standard library
-✅ **Production-ready** - Comprehensive tests, proven in real applications
-✅ **Security-first** - Prevents identifier injection by design
+- ✅ **Declarative routing** with templates like `GET /users/{id:int}/posts/{slug:slug:length[5..50]}`
+- ✅ **Rich type system** - 11+ built-in types with extensible validation
+- ✅ **Powerful constraints** - Range, length, regex, enum, format, and more
+- ✅ **Developer-friendly errors** - Clear messages with suggestions for fixes
+- ✅ **Zero dependencies** - Only Go standard library
+- ✅ **Production-ready** - Comprehensive tests, proven in real applications
+- ✅ **Security-first** - Prevents identifier injection by design
 
 ## Installation
 
