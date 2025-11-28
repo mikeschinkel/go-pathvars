@@ -21,7 +21,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/mikeschinkel/go-dt"
 	"github.com/mikeschinkel/go-pathvars"
 )
 
