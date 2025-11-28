@@ -1,4 +1,4 @@
-.PHONY: help test test-unit test-corpus test-all lint build clean install-tools fmt vet
+.PHONY: help test test-unit test-corpus test-all lint build clean fmt vet
 
 LINTER = "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.6.2"
 
@@ -13,7 +13,6 @@ help:
 	@echo "  make vet          - Run go vet"
 	@echo "  make build        - Build the package"
 	@echo "  make clean        - Clean build artifacts"
-	@echo "  make install-tools - Install development tools (golangci-lint)"
 	@echo "  make ci           - Run all CI checks (fmt, vet, lint, test-all)"
 
 # Go environment
@@ -35,8 +34,7 @@ test-all: test-unit test-corpus
 
 # Run linter
 lint:
-	cd tools && \
-	go run $(LINTER) run ../... --timeout=5m
+	go run $(LINTER) run ./... --timeout=5m
 
 # Format code
 fmt:
