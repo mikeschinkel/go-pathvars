@@ -67,7 +67,7 @@ func (m MatchResult) GetValues(names []Identifier) (pvtypes.ValuesMap, []Identif
 // Those are validated separately via ValidateQueryParameters() using parsedQuery.
 // If the internal map is nil, it initializes an empty map to prevent nil pointer issues.
 func (m MatchResult) ValuesMap() pvtypes.ValuesMap {
-	if m.valuesMap.IsNil() {
+	if !m.valuesMap.Initialized() {
 		m.valuesMap = pvtypes.NewValuesMap(0)
 	}
 	return m.valuesMap
@@ -87,7 +87,7 @@ func (m MatchResult) VarCount() int {
 
 // HasVars returns true if any parameters were extracted from the request.
 func (m MatchResult) HasVars() bool {
-	return !m.valuesMap.IsNil() && m.valuesMap.Len() > 0
+	return m.valuesMap.Initialized() && m.valuesMap.Len() > 0
 }
 
 // ForEachVar iterates over all extracted parameters, calling the provided function

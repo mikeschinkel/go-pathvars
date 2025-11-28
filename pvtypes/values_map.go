@@ -14,8 +14,8 @@ type ValuesMap struct {
 	*OrderedMap[Identifier, any]
 }
 
-func (vm ValuesMap) IsNil() bool {
-	return vm.OrderedMap == nil
+func (vm ValuesMap) Initialized() bool {
+	return vm.OrderedMap != nil
 }
 
 func NewValuesMap(cap int) ValuesMap {

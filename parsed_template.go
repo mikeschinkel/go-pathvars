@@ -87,7 +87,7 @@ func (pt *ParsedTemplate) Match(path, query string) (MatchAttempt, error) {
 	if err != nil {
 		errs = append(errs, err)
 	}
-	if valuesMap.Len() == 0 {
+	if !valuesMap.Initialized() {
 		valuesMap = pvtypes.NewValuesMap(0)
 	}
 
@@ -155,7 +155,7 @@ func (pt *ParsedTemplate) matchPathParameters(path string, valuesMap *pvtypes.Va
 				})
 			}
 		}
-		if valuesMap.IsNil() {
+		if !valuesMap.Initialized() {
 			*valuesMap = pvtypes.NewValuesMap(0)
 		}
 		(*valuesMap).Set(name, value)
@@ -250,7 +250,7 @@ func (pt *ParsedTemplate) matchQueryParameters(query string, valuesMap *pvtypes.
 	matched = true
 
 	addValue = func(name Identifier, value any) {
-		if valuesMap.IsNil() {
+		if !valuesMap.Initialized() {
 			*valuesMap = pvtypes.NewValuesMap(0)
 		}
 		(*valuesMap).Set(name, value)
