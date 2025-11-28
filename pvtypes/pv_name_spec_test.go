@@ -5,9 +5,6 @@ import (
 )
 
 func TestParsePVNameSpec(t *testing.T) {
-	type args struct {
-		ns string
-	}
 	const varName = "name"
 	tests := []struct {
 		name     string

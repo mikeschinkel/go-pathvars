@@ -66,15 +66,15 @@ func (e *ParameterError) Unwrap() error {
 	return e.Err
 }
 
-func ExtractParameterError(err error, pe *ParameterError) (extracted bool) {
-	if !errors.As(err, &pe) {
-		err = NewErr(ErrBug, ErrParameterValidateDoesNotReturnParameterError)
-		goto end
-	}
-	extracted = true
-end:
-	return extracted
-}
+//func ExtractParameterError(err error, pe *ParameterError) (extracted bool) {
+//	if !errors.As(err, &pe) {
+//		err = NewErr(ErrBug, ErrParameterValidateDoesNotReturnParameterError)
+//		goto end
+//	}
+//	extracted = true
+//end:
+//	return extracted
+//}
 
 // Is allows Is(err, ParameterError{}) to match any instance by type
 // and also matches the ErrInvalidParameter sentinel.

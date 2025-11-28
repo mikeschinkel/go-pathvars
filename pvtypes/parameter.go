@@ -33,22 +33,28 @@ type Parameter struct {
 func (p Parameter) Location() LocationType {
 	return p.location
 }
-func (p Parameter) SetLocation(lt LocationType) {
+
+func (p Parameter) WithLocation(lt LocationType) Parameter {
 	p.location = lt
+	return p
 }
 
 func (p Parameter) Constraints() []Constraint {
 	return p.constraints
 }
-func (p Parameter) SetConstraints(cs []Constraint) {
+
+func (p Parameter) WithConstraints(cs []Constraint) Parameter {
 	p.constraints = cs
+	return p
 }
 
 func (p Parameter) Position() int {
 	return p.position
 }
-func (p Parameter) SetPosition(pos int) {
+
+func (p Parameter) WithPosition(pos int) Parameter {
 	p.position = pos
+	return p
 }
 
 type nameProps = NameSpecProps

@@ -814,3 +814,395 @@ func TestTemplate_FaultSource(t *testing.T) {
 		})
 	}
 }
+
+// TestParsedTemplate_Validate tests the Validate method for programmatic parameter validation
+func TestParsedTemplate_Validate(t *testing.T) {
+	tests := []struct {
+		name     string
+		template string
+		params   map[pathvars.Identifier]any
+		wantErr  bool
+		errCheck func(t *testing.T, err error)
+	}{
+		// ==================== VALID CASES ====================
+		{
+			name:     "Valid required integer parameter",
+			template: "/api/users/{id:integer}",
+			params: map[pathvars.Identifier]any{
+				"id": 123,
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Valid required string parameter",
+			template: "/api/posts/{slug:string}",
+			params: map[pathvars.Identifier]any{
+				"slug": "hello-world",
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Valid UUID parameter",
+			template: "/api/items/{uuid:uuid}",
+			params: map[pathvars.Identifier]any{
+				"uuid": "550e8400-e29b-41d4-a716-446655440000",
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Valid boolean parameter",
+			template: "/api/settings/{enabled:boolean}",
+			params: map[pathvars.Identifier]any{
+				"enabled": true,
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Valid parameter with constraint (in range)",
+			template: "/api/score/{value:integer:range[0..100]}",
+			params: map[pathvars.Identifier]any{
+				"value": 50,
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Valid parameter with enum constraint",
+			template: "/api/status/{value:string:enum[active,inactive,pending]}",
+			params: map[pathvars.Identifier]any{
+				"value": "active",
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Valid parameter with length constraint",
+			template: "/api/code/{value:string:length[5..10]}",
+			params: map[pathvars.Identifier]any{
+				"value": "hello",
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Multiple valid parameters",
+			template: "/api/users/{id:integer}/posts/{slug:string}",
+			params: map[pathvars.Identifier]any{
+				"id":   42,
+				"slug": "my-post",
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Optional parameter missing (should pass)",
+			template: "/api/users/{id:integer}/{name?:string}",
+			params: map[pathvars.Identifier]any{
+				"id": 123,
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Optional parameter provided (should validate)",
+			template: "/api/users/{id:integer}/{name?:string}",
+			params: map[pathvars.Identifier]any{
+				"id":   123,
+				"name": "john",
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Type conversion: int passed for integer parameter",
+			template: "/api/users/{id:integer}",
+			params: map[pathvars.Identifier]any{
+				"id": 42,
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Type conversion: string passed for string parameter",
+			template: "/api/posts/{slug:string}",
+			params: map[pathvars.Identifier]any{
+				"slug": "hello",
+			},
+			wantErr: false,
+		},
+		{
+			name:     "Type conversion: bool passed for boolean parameter",
+			template: "/api/settings/{enabled:boolean}",
+			params: map[pathvars.Identifier]any{
+				"enabled": false,
+			},
+			wantErr: false,
+		},
+
+		// ==================== INVALID TYPE CASES ====================
+		{
+			name:     "Invalid integer parameter (string value)",
+			template: "/api/users/{id:integer}",
+			params: map[pathvars.Identifier]any{
+				"id": "abc",
+			},
+			wantErr: true,
+			errCheck: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "id") {
+					t.Errorf("Error should mention parameter 'id', got: %v", err)
+				}
+			},
+		},
+		{
+			name:     "Invalid UUID parameter",
+			template: "/api/items/{uuid:uuid}",
+			params: map[pathvars.Identifier]any{
+				"uuid": "not-a-uuid",
+			},
+			wantErr: true,
+			errCheck: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "uuid") {
+					t.Errorf("Error should mention uuid, got: %v", err)
+				}
+			},
+		},
+		{
+			name:     "Invalid boolean parameter",
+			template: "/api/settings/{enabled:boolean}",
+			params: map[pathvars.Identifier]any{
+				"enabled": "maybe",
+			},
+			wantErr: true,
+			errCheck: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "enabled") {
+					t.Errorf("Error should mention parameter 'enabled', got: %v", err)
+				}
+			},
+		},
+
+		// ==================== CONSTRAINT VIOLATION CASES ====================
+		{
+			name:     "Range constraint violation (below min)",
+			template: "/api/score/{value:integer:range[0..100]}",
+			params: map[pathvars.Identifier]any{
+				"value": -1,
+			},
+			wantErr: true,
+			errCheck: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "value") && !strings.Contains(err.Error(), "range") {
+					t.Errorf("Error should mention constraint violation, got: %v", err)
+				}
+			},
+		},
+		{
+			name:     "Range constraint violation (above max)",
+			template: "/api/score/{value:integer:range[0..100]}",
+			params: map[pathvars.Identifier]any{
+				"value": 101,
+			},
+			wantErr: true,
+			errCheck: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "value") && !strings.Contains(err.Error(), "range") {
+					t.Errorf("Error should mention constraint violation, got: %v", err)
+				}
+			},
+		},
+		{
+			name:     "Enum constraint violation",
+			template: "/api/status/{value:string:enum[active,inactive,pending]}",
+			params: map[pathvars.Identifier]any{
+				"value": "deleted",
+			},
+			wantErr: true,
+			errCheck: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "value") {
+					t.Errorf("Error should mention parameter 'value', got: %v", err)
+				}
+			},
+		},
+		{
+			name:     "Length constraint violation (too short)",
+			template: "/api/code/{value:string:length[5..10]}",
+			params: map[pathvars.Identifier]any{
+				"value": "hi",
+			},
+			wantErr: true,
+			errCheck: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "value") {
+					t.Errorf("Error should mention parameter 'value', got: %v", err)
+				}
+			},
+		},
+		{
+			name:     "Length constraint violation (too long)",
+			template: "/api/code/{value:string:length[5..10]}",
+			params: map[pathvars.Identifier]any{
+				"value": "this-is-too-long",
+			},
+			wantErr: true,
+			errCheck: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "value") {
+					t.Errorf("Error should mention parameter 'value', got: %v", err)
+				}
+			},
+		},
+
+		// ==================== MISSING PARAMETER CASES ====================
+		{
+			name:     "Missing required parameter",
+			template: "/api/users/{id:integer}",
+			params:   map[pathvars.Identifier]any{},
+			wantErr:  true,
+			errCheck: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "id") || !strings.Contains(err.Error(), "required") {
+					t.Errorf("Error should mention missing required parameter 'id', got: %v", err)
+				}
+			},
+		},
+		{
+			name:     "Multiple missing required parameters",
+			template: "/api/users/{id:integer}/posts/{slug:string}",
+			params:   map[pathvars.Identifier]any{},
+			wantErr:  true,
+			errCheck: func(t *testing.T, err error) {
+				errStr := err.Error()
+				if !strings.Contains(errStr, "id") || !strings.Contains(errStr, "slug") {
+					t.Errorf("Error should mention both missing parameters, got: %v", err)
+				}
+			},
+		},
+		{
+			name:     "One valid, one missing required parameter",
+			template: "/api/users/{id:integer}/posts/{slug:string}",
+			params: map[pathvars.Identifier]any{
+				"id": 123,
+			},
+			wantErr: true,
+			errCheck: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "slug") {
+					t.Errorf("Error should mention missing parameter 'slug', got: %v", err)
+				}
+			},
+		},
+
+		// ==================== OPTIONAL PARAMETER CASES ====================
+		{
+			name:     "Optional parameter with invalid value (should fail)",
+			template: "/api/users/{id:integer}/{age?:integer}",
+			params: map[pathvars.Identifier]any{
+				"id":  123,
+				"age": "not-a-number",
+			},
+			wantErr: true,
+			errCheck: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "age") {
+					t.Errorf("Error should mention parameter 'age', got: %v", err)
+				}
+			},
+		},
+
+		// ==================== MULTIPLE ERROR CASES ====================
+		{
+			name:     "Multiple validation errors collected",
+			template: "/api/users/{id:integer}/score/{value:integer:range[0..100]}",
+			params: map[pathvars.Identifier]any{
+				"id":    "abc", // Invalid type
+				"value": 200,   // Out of range
+			},
+			wantErr: true,
+			errCheck: func(t *testing.T, err error) {
+				errStr := err.Error()
+				// Both errors should be present
+				hasIdError := strings.Contains(errStr, "id")
+				hasValueError := strings.Contains(errStr, "value") || strings.Contains(errStr, "range")
+				if !hasIdError && !hasValueError {
+					t.Errorf("Error should mention both parameter errors, got: %v", err)
+				}
+			},
+		},
+
+		// ==================== EDGE CASES ====================
+		{
+			name:     "Empty params map with required parameters",
+			template: "/api/users/{id:integer}",
+			params:   map[pathvars.Identifier]any{},
+			wantErr:  true,
+		},
+		{
+			name:     "Nil value in params map",
+			template: "/api/users/{id:integer}",
+			params: map[pathvars.Identifier]any{
+				"id": nil,
+			},
+			wantErr: true, // "nil" as string won't parse as integer
+		},
+		{
+			name:     "Empty string for required parameter",
+			template: "/api/users/{id:integer}",
+			params: map[pathvars.Identifier]any{
+				"id": "",
+			},
+			wantErr: true, // Empty string won't parse as integer
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Parse template
+			tmpl, err := pathvars.ParseTemplate(tt.template)
+			if err != nil {
+				t.Fatalf("ParseTemplate() error = %v", err)
+			}
+
+			// Validate parameters
+			err = tmpl.Validate(tt.params)
+
+			// Check error expectation
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			// Run custom error checks if provided
+			if tt.wantErr && tt.errCheck != nil && err != nil {
+				tt.errCheck(t, err)
+			}
+		})
+	}
+}
+
+// TestParsedTemplate_Validate_TypeConversions tests various type conversions
+func TestParsedTemplate_Validate_TypeConversions(t *testing.T) {
+	tests := []struct {
+		name     string
+		template string
+		value    any
+		wantErr  bool
+	}{
+		// Integer conversions
+		{name: "int to integer", template: "/api/{v:integer}", value: int(42), wantErr: false},
+		{name: "int8 to integer", template: "/api/{v:integer}", value: int8(42), wantErr: false},
+		{name: "int16 to integer", template: "/api/{v:integer}", value: int16(42), wantErr: false},
+		{name: "int32 to integer", template: "/api/{v:integer}", value: int32(42), wantErr: false},
+		{name: "int64 to integer", template: "/api/{v:integer}", value: int64(42), wantErr: false},
+		{name: "uint to integer", template: "/api/{v:integer}", value: uint(42), wantErr: false},
+
+		// String conversions
+		{name: "string to string", template: "/api/{v:string}", value: "hello", wantErr: false},
+
+		// Boolean conversions
+		{name: "bool true to boolean", template: "/api/{v:boolean}", value: true, wantErr: false},
+		{name: "bool false to boolean", template: "/api/{v:boolean}", value: false, wantErr: false},
+		{name: "string 'true' to boolean", template: "/api/{v:boolean}", value: "true", wantErr: false},
+		{name: "string 'false' to boolean", template: "/api/{v:boolean}", value: "false", wantErr: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tmpl, err := pathvars.ParseTemplate(tt.template)
+			if err != nil {
+				t.Fatalf("ParseTemplate() error = %v", err)
+			}
+
+			params := map[pathvars.Identifier]any{"v": tt.value}
+			err = tmpl.Validate(params)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Validate() with value %v (%T) error = %v, wantErr %v", tt.value, tt.value, err, tt.wantErr)
+			}
+		})
+	}
+}

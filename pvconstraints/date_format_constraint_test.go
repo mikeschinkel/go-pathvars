@@ -229,7 +229,6 @@ func TestDateFormatConstraintInterface(t *testing.T) {
 	if str == "" {
 		t.Error("String() returned empty string")
 	}
-	t.Logf("String() = %q", str)
 
 	// Test Rule()
 	rule := constraint.Rule()
@@ -286,14 +285,10 @@ func TestDateFormatConstraintErrorMessages(t *testing.T) {
 		t.Error("ErrorDetail() returned empty string")
 	}
 
-	t.Logf("Error detail: %s", detail)
-
 	// Test ErrorSuggestion
 	suggestion := constraint.ErrorSuggestion(&param, invalidValue, "2023-12-25")
 
 	if suggestion == "" {
 		t.Error("ErrorSuggestion() returned empty string")
 	}
-
-	t.Logf("Error suggestion: %s", suggestion)
 }

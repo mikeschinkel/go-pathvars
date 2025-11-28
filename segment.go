@@ -34,12 +34,20 @@ func (s *Segment) Parse(raw string) (err error) {
 		goto end
 	}
 	s.Prefix, spec, s.Suffix, err = ExtractParameterSpec(s.Raw)
+	if err != nil {
+		err = NewErr(
+			ErrFailedToExtractParameterSpec,
+			err,
+		)
+		goto end
+	}
 
 	p, err = ParseParameter(spec, PathLocation)
 	if err != nil {
-		err = WithErr(err,
-			"segment", s.Raw,
+		err = NewErr(
+			ErrFailedToParseParameter,
 			"position", len(s.Parameters),
+			err,
 		)
 		goto end
 	}
@@ -47,6 +55,12 @@ func (s *Segment) Parse(raw string) (err error) {
 	s.Parameters = []Parameter{p}
 
 end:
+	if err != nil {
+		err = WithErr(err,
+			ErrParseFailed,
+			"segment", s.Raw,
+		)
+	}
 	return err
 }
 

@@ -223,7 +223,7 @@ func TestRegexConstraintInterface(t *testing.T) {
 	if str == "" {
 		t.Error("String() returned empty string")
 	}
-	t.Logf("String() = %q", str)
+	// // t.Logf("String() = %q", str)
 
 	// Test Rule() - should return original pattern without anchors
 	rule := constraint.Rule()
@@ -281,11 +281,11 @@ func TestRegexConstraintErrorMessages(t *testing.T) {
 	}
 
 	// Verify suggestion mentions anchors (implementation detail)
-	if !regexContains(suggestion, "anchor") && !regexContains(suggestion, "^") && !regexContains(suggestion, "$") {
-		t.Logf("Note: ErrorSuggestion might want to mention anchors: %s", suggestion)
-	}
+	//if !regexContains(suggestion, "anchor") && !regexContains(suggestion, "^") && !regexContains(suggestion, "$") {
+	// t.Logf("Note: ErrorSuggestion might want to mention anchors: %s", suggestion)
+	//}
 
-	t.Logf("Error suggestion: %s", suggestion)
+	// t.Logf("Error suggestion: %s", suggestion)
 }
 
 func TestRegexConstraintAnchorRejection(t *testing.T) {
@@ -326,7 +326,7 @@ func TestRegexConstraintAnchorRejection(t *testing.T) {
 				t.Errorf("Error message should contain %q but got: %s", tt.wantErr, errMsg)
 			}
 
-			t.Logf("Expected error: %v", err)
+			// // t.Logf("Expected error: %v", err)
 		})
 	}
 }

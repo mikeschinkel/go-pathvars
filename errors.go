@@ -16,8 +16,9 @@ var (
 	ErrInvalidParameterType = errors.New("invalid parameter type")
 
 	// ErrParseFailed indicates that parsing of a constraint or parameter failed.
-	ErrParseFailed = errors.New("parse failed")
-
+	ErrParseFailed                  = errors.New("parse failed")
+	ErrFailedToExtractParameterSpec = errors.New("failed to extract parameter spec")
+	ErrFailedToParseParameter       = errors.New("failed to parse parameter")
 	// ErrConstraintValidationFailed indicates that constraint validation failed.
 	ErrConstraintValidationFailed = errors.New("constraint validation failed")
 

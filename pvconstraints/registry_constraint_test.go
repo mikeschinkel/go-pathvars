@@ -17,7 +17,7 @@ func TestUUIDConstraintRegistry(t *testing.T) {
 		if constraint == nil {
 			t.Fatal("UUID format constraint is nil")
 		}
-		//t.Logf("UUID format constraint found: %T", constraint)
+		//// t.Logf("UUID format constraint found: %T", constraint)
 	})
 
 	t.Run("string-format-constraint-registered-for-string-type", func(t *testing.T) {
@@ -28,7 +28,7 @@ func TestUUIDConstraintRegistry(t *testing.T) {
 		if constraint == nil {
 			t.Fatal("String format constraint is nil")
 		}
-		//t.Logf("String format constraint found: %T", constraint)
+		//// t.Logf("String format constraint found: %T", constraint)
 	})
 
 	t.Run("date-format-constraint-registered-for-date-type", func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestUUIDConstraintRegistry(t *testing.T) {
 		if constraint == nil {
 			t.Fatal("Date format constraint is nil")
 		}
-		//t.Logf("Date format constraint found: %T", constraint)
+		//// t.Logf("Date format constraint found: %T", constraint)
 	})
 
 	t.Run("parse-uuid-v4-constraint", func(t *testing.T) {
@@ -55,7 +55,7 @@ func TestUUIDConstraintRegistry(t *testing.T) {
 		if parsedConstraint == nil {
 			t.Fatal("Parsed UUID v4 constraint is nil")
 		}
-		//t.Logf("UUID v4 constraint parsed: %T", parsedConstraint)
+		//// t.Logf("UUID v4 constraint parsed: %T", parsedConstraint)
 	})
 
 	t.Run("parse-ulid-constraint-via-string-type", func(t *testing.T) {
@@ -71,7 +71,7 @@ func TestUUIDConstraintRegistry(t *testing.T) {
 		if parsedConstraint == nil {
 			t.Fatal("Parsed ULID constraint is nil")
 		}
-		//t.Logf("ULID constraint parsed: %T", parsedConstraint)
+		//// t.Logf("ULID constraint parsed: %T", parsedConstraint)
 	})
 
 	t.Run("constraint-map-key-generation", func(t *testing.T) {
@@ -81,13 +81,13 @@ func TestUUIDConstraintRegistry(t *testing.T) {
 		if key != expectedKey {
 			t.Errorf("Expected constraint map key %q, got %q", expectedKey, key)
 		}
-		//t.Logf("UUID format constraint map key: %s", key)
+		//// t.Logf("UUID format constraint map key: %s", key)
 
 		key = pvtypes.GetConstraintMapKey(pvtypes.FormatConstraintType, pvtypes.StringTypeSlug)
 		expectedKey = "string_format"
 		if key != expectedKey {
 			t.Errorf("Expected constraint map key %q, got %q", expectedKey, key)
 		}
-		//t.Logf("String format constraint map key: %s", key)
+		//// t.Logf("String format constraint map key: %s", key)
 	})
 }

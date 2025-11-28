@@ -55,8 +55,7 @@ func RegisterDataTypeClassifier(v DataTypeClassifier) {
 }
 
 func FindDataType(slug PVDataTypeSlug) (dt PVDataType) {
-	dt, _ = dataTypeMap[PVDataTypeSlug(strings.ToLower(string(slug)))]
-	return dt
+	return dataTypeMap[PVDataTypeSlug(strings.ToLower(string(slug)))]
 }
 
 func GetDataTypeClassifier(dt PVDataType) (v DataTypeClassifier, err error) {

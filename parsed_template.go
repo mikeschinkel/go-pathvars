@@ -88,7 +88,7 @@ func (pt *ParsedTemplate) Match(path, query string) (MatchAttempt, error) {
 		errs = append(errs, err)
 	}
 	if valuesMap.Len() == 0 {
-		valuesMap.SetNil()
+		valuesMap = pvtypes.NewValuesMap(0)
 	}
 
 	return MatchAttempt{
@@ -185,23 +185,26 @@ func (pt *ParsedTemplate) matchPathParameters(path string, valuesMap *pvtypes.Va
 	}
 
 	// Now that valuesMap is complete, construct validation errors with proper suggestion URLs
-	for _, ve := range validationErrors {
-		exampleURL := pt.Example(&pvtypes.ExampleArgs{
-			ProblematicParam:   ve.param,
-			UserProvidedParams: &userProvidedParams,
-			ValidationErr:      ve.validErr,
-		})
-		errs = append(errs, NewTemplateError(ve.validErr, TemplateErrorArgs{
-			Endpoint:   pt.Original(),
-			Example:    exampleURL,
-			Source:     path,
-			Location:   ve.location,
-			Suggestion: ve.param.ErrorSuggestion(ve.validErr, ve.value, exampleURL),
-			Parameter:  ve.param,
-		}))
-	}
+	err = pt.buildValidationErrors(errs, validationErrors, path, &userProvidedParams)
 
-	err = CombineErrs(errs)
+	// buildValidationErrors replaced the following. Feel free to delete this when ready.
+	//for _, ve := range validationErrors {
+	//	exampleURL := pt.Example(&pvtypes.ExampleArgs{
+	//		ProblematicParam:   ve.param,
+	//		UserProvidedParams: &userProvidedParams,
+	//		ValidationErr:      ve.validErr,
+	//	})
+	//	errs = append(errs, NewTemplateError(ve.validErr, TemplateErrorArgs{
+	//		Endpoint:   pt.Original(),
+	//		Example:    exampleURL,
+	//		Source:     path,
+	//		Location:   ve.location,
+	//		Suggestion: ve.param.ErrorSuggestion(ve.validErr, ve.value, exampleURL),
+	//		Parameter:  ve.param,
+	//	}))
+	//}
+	//err = CombineErrs(errs)
+
 end:
 	return matched, err
 }
@@ -325,25 +328,47 @@ func (pt *ParsedTemplate) matchQueryParameters(query string, valuesMap *pvtypes.
 	}
 
 	// Now that valuesMap is complete, construct validation errors with proper suggestion URLs
-	for _, ve := range validationErrors {
+	err = pt.buildValidationErrors(errs, validationErrors, query, &userProvidedParams)
+
+	// buildValidationErrors replaced the following. Feel free to delete this when ready.
+	//for _, ve := range validationErrors {
+	//	exampleURL := pt.Example(&pvtypes.ExampleArgs{
+	//		ProblematicParam:   ve.param,
+	//		UserProvidedParams: &userProvidedParams,
+	//		ValidationErr:      ve.validErr,
+	//	})
+	//	errs = append(errs, NewTemplateError(ve.validErr, TemplateErrorArgs{
+	//		Endpoint:   pt.Original(),
+	//		Example:    exampleURL,
+	//		Source:     query,
+	//		Location:   ve.location,
+	//		Suggestion: ve.param.ErrorSuggestion(ve.validErr, ve.value, exampleURL),
+	//		Parameter:  ve.param,
+	//	}))
+	//}
+	//err = CombineErrs(errs)
+end:
+	return matched, err
+}
+
+func (pt *ParsedTemplate) buildValidationErrors(errs []error, paramErrs []paramValidationError, source string, userProvidedParams *pvtypes.ValuesMap) error {
+	// Now that valuesMap is complete, construct validation errors with proper suggestion URLs
+	for _, ve := range paramErrs {
 		exampleURL := pt.Example(&pvtypes.ExampleArgs{
 			ProblematicParam:   ve.param,
-			UserProvidedParams: &userProvidedParams,
+			UserProvidedParams: userProvidedParams,
 			ValidationErr:      ve.validErr,
 		})
 		errs = append(errs, NewTemplateError(ve.validErr, TemplateErrorArgs{
 			Endpoint:   pt.Original(),
 			Example:    exampleURL,
-			Source:     query,
+			Source:     source,
 			Location:   ve.location,
 			Suggestion: ve.param.ErrorSuggestion(ve.validErr, ve.value, exampleURL),
 			Parameter:  ve.param,
 		}))
 	}
-
-	err = CombineErrs(errs)
-end:
-	return matched, err
+	return CombineErrs(errs)
 }
 
 // decomposeValue decomposes a multi-segment value into its component parts and adds them
@@ -393,11 +418,43 @@ func (pt *ParsedTemplate) Parameters() *pvtypes.OrderedMap[Identifier, Parameter
 }
 
 // Validate checks parameter values against the template requirements.
-// TODO: Implementation needed - should validate each parameter value.
+// It validates each provided parameter value against its type and constraints,
+// and ensures all required parameters are present.
 func (pt *ParsedTemplate) Validate(params map[Identifier]any) (err error) {
-	// Validate each parameter value
-	panic("IMPLEMENT ME")
-	return err
+	var errs []error
+	var value any
+	var found bool
+	var valueStr string
+
+	// Iterate through all template parameters
+	for p := range pt.params.Values() {
+		// Check if parameter value provided
+		value, found = params[p.Name]
+
+		// Handle missing parameters
+		if !found {
+			if !p.Optional {
+				// Required parameter missing
+				errs = append(errs, NewErr(
+					ErrRequiredParameterNotProvided,
+					"parameter", p.Name,
+				))
+			}
+			// Optional parameters are OK to be missing
+			continue
+		}
+
+		// Convert value to string for validation
+		valueStr = fmt.Sprintf("%v", value)
+
+		// Validate using existing Parameter.Validate method
+		err = p.Validate(valueStr)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return CombineErrs(errs)
 }
 
 // Substitute builds a path from parameter values by replacing template placeholders.

@@ -1,7 +1,6 @@
 package pvtypes
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -42,15 +41,15 @@ func (e ConstraintError) Unwrap() error {
 	return e.Err
 }
 
-func ExtractConstraintError(err error, ce *ConstraintError) (extracted bool) {
-	if !errors.As(err, &ce) {
-		err = NewErr(ErrBug, ErrConstraintValidateDoesNotReturnConstraintError)
-		goto end
-	}
-	extracted = true
-end:
-	return extracted
-}
+//func ExtractConstraintError(err error, ce *ConstraintError) (extracted bool) {
+//	if !errors.As(err, &ce) {
+//		err = NewErr(ErrBug, ErrConstraintValidateDoesNotReturnConstraintError)
+//		goto end
+//	}
+//	extracted = true
+//end:
+//	return extracted
+//}
 
 // Is allows Is(err, ConstraintError{}) to match any instance by type
 // and also matches the ErrInvalidConstraint sentinel.

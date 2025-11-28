@@ -162,7 +162,7 @@ func TestParameterExample_FallbackToDataType(t *testing.T) {
 				t.Fatal("Example() returned nil")
 			}
 
-			t.Logf("Example for %s: %v (type: %T)", tt.paramSpec, example, example)
+			// t.Logf("Example for %s: %v (type: %T)", tt.paramSpec, example, example)
 
 			// Verify the example validates if expected
 			exampleStr, ok := example.(string)
@@ -175,9 +175,9 @@ func TestParameterExample_FallbackToDataType(t *testing.T) {
 			if tt.shouldValidate && err != nil {
 				t.Errorf("Example %q should have validated but got error: %v", exampleStr, err)
 			}
-			if !tt.shouldValidate && err == nil {
-				t.Logf("Note: Example %q doesn't satisfy constraints (expected)", exampleStr)
-			}
+			//if !tt.shouldValidate && err == nil {
+			//	// t.Logf("Note: Example %q doesn't satisfy constraints (expected)", exampleStr)
+			//}
 		})
 	}
 }

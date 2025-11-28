@@ -156,9 +156,11 @@ var (
 	ErrInvalidSnowflakeFormat = errors.New("invalid Snowflake ID format")
 
 	// ErrSnowflakeTimestampInFuture indicates that Snowflake timestamp is in the future.
+	//nolint:staticcheck // Snowflake is a proper name
 	ErrSnowflakeTimestampInFuture = errors.New("Snowflake timestamp is in the future")
 
 	// ErrSnowflakeTimestampNegative indicates that Snowflake timestamp is negative (before epoch).
+	//nolint:staticcheck // Snowflake is a proper name
 	ErrSnowflakeTimestampNegative = errors.New("Snowflake timestamp is negative (before epoch)")
 
 	// ErrInvalidSnowflakeEpoch indicates that the custom epoch parameter is invalid.

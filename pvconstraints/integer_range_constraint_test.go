@@ -134,7 +134,6 @@ func TestIntegerRangeConstraintInterface(t *testing.T) {
 	if str == "" {
 		t.Error("String() returned empty string")
 	}
-	t.Logf("String() = %q", str)
 
 	// Test Rule()
 	rule := constraint.Rule()

@@ -49,7 +49,7 @@ func TestFuzzCorpus(t *testing.T) {
 		// Extract input string from corpus file format
 		input := extractCorpusInput(string(data))
 		if input == "" {
-			t.Logf("Skipping empty or unparseable corpus file: %s", entry.Name())
+			// t.Logf("Skipping empty or unparseable corpus file: %s", entry.Name())
 			continue
 		}
 
@@ -88,12 +88,13 @@ func TestFuzzCorpus(t *testing.T) {
 	}
 
 	// Log summary
-	total := successes + parseErrors + panics + infiniteLoops
-	t.Logf("Corpus test summary: %d total cases", total)
-	t.Logf("  - %d successes (parsed without error)", successes)
-	t.Logf("  - %d parse errors (expected for malformed input)", parseErrors)
-	t.Logf("  - %d panics (MUST FIX)", panics)
-	t.Logf("  - %d infinite loops (MUST FIX)", infiniteLoops)
+	_ = successes + parseErrors + panics + infiniteLoops
+	// total := successes + parseErrors + panics + infiniteLoops
+	// t.Logf("Corpus test summary: %d total cases", total)
+	// t.Logf("  - %d successes (parsed without error)", successes)
+	// t.Logf("  - %d parse errors (expected for malformed input)", parseErrors)
+	// t.Logf("  - %d panics (MUST FIX)", panics)
+	// t.Logf("  - %d infinite loops (MUST FIX)", infiniteLoops)
 
 	// Fail test if we found critical issues
 	if panics > 0 {

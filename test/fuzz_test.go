@@ -155,7 +155,7 @@ func FuzzParseTemplate(f *testing.F) {
 			// Verify result is sensible (non-empty template should produce non-empty result)
 			// Note: Empty template might be valid, so only check if template was non-empty
 			if template != "" && result.String() == "" {
-				t.Logf("ParseTemplate returned empty string representation for non-empty input: %q (this might be OK)", template)
+				// t.Logf("ParseTemplate returned empty string representation for non-empty input: %q (this might be OK)", template)
 			}
 
 		case <-time.After(1 * time.Second):

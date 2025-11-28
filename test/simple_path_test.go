@@ -52,9 +52,9 @@ func TestSimplePathWithoutParametersVerbose(t *testing.T) {
 	}
 
 	//// Show what the regex looks like for debugging
-	//t.Logf("Template regex: %v", template.regex)
+	// t.Logf("Template regex: %v", template.regex)
 	//if template.regex != nil {
-	//	t.Logf("Regex pattern: %s", template.regex.String())
+	//	// t.Logf("Regex pattern: %s", template.regex.String())
 	//}
 
 	tests := []struct {
@@ -73,7 +73,7 @@ func TestSimplePathWithoutParametersVerbose(t *testing.T) {
 	for _, test := range tests {
 		attempt, err := template.Match(test.path, "")
 
-		//t.Logf("Path: %s, Matched: %v, Vars: %v (%s)", test.path, matched, valuesMap, test.name)
+		// t.Logf("Path: %s, Matched: %v, Vars: %v (%s)", test.path, matched, valuesMap, test.name)
 		//goland:noinspection GoDfaErrorMayBeNotNil
 		if test.expectMatch && !attempt.PathMatched {
 			t.Errorf("Path error: Expected Match: %t, Error: %v", test.expectMatch, err)

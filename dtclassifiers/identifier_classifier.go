@@ -21,12 +21,8 @@ type IdentifierClassifier struct {
 func (v IdentifierClassifier) Validate(value string) (err error) {
 	const re = `^[a-z][a-z0-9_]*$`
 
-	var matched bool
-	var regex *regexp.Regexp
-
-	regex = regexp.MustCompile(re)
-	matched = regex.MatchString(value)
-	if !matched {
+	regex := regexp.MustCompile(re)
+	if !regex.MatchString(value) {
 		err = NewErr(
 			pvt.ErrInvalidIdentifierFormat,
 			"regex", re,

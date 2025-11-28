@@ -27,10 +27,8 @@ func (v AlphaNumericClassifier) MakeNew(args *pvt.DataTypeClassifierArgs) pvt.Da
 	}
 }
 func (v AlphaNumericClassifier) Validate(value string) (err error) {
-	var matched bool
 
-	matched = alphaNumericRegex.MatchString(value)
-	if !matched {
+	if !alphaNumericRegex.MatchString(value) {
 		err = NewErr(
 			pvt.ErrInvalidAlphanumericFormat,
 			"regex", alphaNumericRegexString,

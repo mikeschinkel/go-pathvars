@@ -132,14 +132,12 @@ func TestDecimalRangeConstraintInterface(t *testing.T) {
 	if str == "" {
 		t.Error("String() returned empty string")
 	}
-	t.Logf("String() = %q", str)
 
 	// Test Rule()
 	rule := constraint.Rule()
 	if rule == "" {
 		t.Error("Rule() returned empty string")
 	}
-	t.Logf("Rule() = %q", rule)
 
 	// Test ValidatesType()
 	if constraint.ValidatesType() {

@@ -110,7 +110,7 @@ func TestNotEmptyConstraintInterface(t *testing.T) {
 	if str == "" {
 		t.Error("String() returned empty string")
 	}
-	t.Logf("String() = %q", str)
+	// // t.Logf("String() = %q", str)
 
 	// Test Rule() - should return empty for notempty (no parameters)
 	rule := constraint.Rule()
@@ -168,7 +168,7 @@ func TestNotEmptyConstraintExamples(t *testing.T) {
 		t.Errorf("Example %q failed validation: %v", exampleStr, err)
 	}
 
-	t.Logf("Example value: %q", exampleStr)
+	// // t.Logf("Example value: %q", exampleStr)
 }
 
 func TestNotEmptyConstraintErrorMessages(t *testing.T) {
@@ -204,7 +204,7 @@ func TestNotEmptyConstraintErrorMessages(t *testing.T) {
 		t.Errorf("ErrorDetail() should mention 'empty': %s", detail)
 	}
 
-	t.Logf("Error detail: %s", detail)
+	// // t.Logf("Error detail: %s", detail)
 
 	// Test ErrorSuggestion
 	suggestion := constraint.ErrorSuggestion(&param, emptyValue, "example")
@@ -217,7 +217,7 @@ func TestNotEmptyConstraintErrorMessages(t *testing.T) {
 		t.Errorf("ErrorSuggestion() should mention parameter name: %s", suggestion)
 	}
 
-	t.Logf("Error suggestion: %s", suggestion)
+	// // t.Logf("Error suggestion: %s", suggestion)
 }
 
 // Helper function to check if a string contains a substring

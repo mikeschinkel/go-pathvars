@@ -20,11 +20,9 @@ type UUIDClassifier struct {
 var uuidRegex = regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`)
 
 func (v UUIDClassifier) Validate(value string) (err error) {
-	var matched bool
 
 	// Basic UUID pattern: 8-4-4-4-12 hex digits
-	matched = uuidRegex.MatchString(value)
-	if !matched {
+	if !uuidRegex.MatchString(value) {
 		err = NewErr(
 			pvt.ErrInvalidUUIDFormatBasic,
 			errors.New("pattern=8-4-4-4-12 hex digits"),

@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 
@@ -62,24 +63,24 @@ func main() {
 			// GET /users/{id:int}
 			userID, _ := result.GetValue("id")
 			w.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintf(w, "User ID: %s\n", userID)
-			fmt.Fprintf(w, "Matched route: %s %s\n", result.Route.Method, result.Route.ParsedTemplate.String())
+			fprintf(w, "User ID: %s\n", userID)
+			fprintf(w, "Matched route: %s %s\n", result.Route.Method, result.Route.ParsedTemplate.String())
 
 		case 1:
 			// GET /posts/{slug:slug:length[5..50]}
 			slug, _ := result.GetValue("slug")
 			w.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintf(w, "Post slug: %s\n", slug)
-			fmt.Fprintf(w, "Matched route: %s %s\n", result.Route.Method, result.Route.ParsedTemplate.String())
+			fprintf(w, "Post slug: %s\n", slug)
+			fprintf(w, "Matched route: %s %s\n", result.Route.Method, result.Route.ParsedTemplate.String())
 
 		case 2:
 			// GET /products?{category:string}&{limit?20:int:range[1..100]}
 			category, _ := result.GetValue("category")
 			limit, _ := result.GetValue("limit")
 			w.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintf(w, "Product category: %s\n", category)
-			fmt.Fprintf(w, "Limit: %s (default: 20)\n", limit)
-			fmt.Fprintf(w, "Matched route: %s %s\n", result.Route.Method, result.Route.ParsedTemplate.String())
+			fprintf(w, "Product category: %s\n", category)
+			fprintf(w, "Limit: %s (default: 20)\n", limit)
+			fprintf(w, "Matched route: %s %s\n", result.Route.Method, result.Route.ParsedTemplate.String())
 
 		default:
 			http.Error(w, "Unknown route", http.StatusInternalServerError)
@@ -99,5 +100,12 @@ func main() {
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Server failed: %v", err)
+	}
+}
+
+func fprintf(w io.Writer, format string, args ...any) {
+	_, err := fmt.Fprintf(w, format, args...)
+	if err != nil {
+		log.Printf("ERROR on write: %v", err)
 	}
 }

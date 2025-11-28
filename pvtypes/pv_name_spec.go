@@ -91,15 +91,3 @@ func ParseNameSpecProps(ns string) (props *NameSpecProps, err error) {
 end:
 	return props, err
 }
-
-func inMatchElements(toFind string, matches []string, indexes ...int) (found bool) {
-	for _, index := range indexes {
-		if matches[index] != toFind {
-			continue
-		}
-		found = true
-		goto end
-	}
-end:
-	return found
-}

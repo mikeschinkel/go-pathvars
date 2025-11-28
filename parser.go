@@ -70,10 +70,9 @@ func parseSegments(template string) (segments []Segment, params *pvtypes.Ordered
 	params = pvtypes.NewOrderedMap[Identifier, Parameter](len(pathParams))
 	position = 0
 	for name, p := range pathParams {
-		p.SetLocation(PathLocation)
-		p.SetPosition(position)
+		p = p.WithLocation(PathLocation).WithPosition(position)
 		if p.Constraints() == nil {
-			p.SetConstraints(make([]Constraint, 0))
+			p = p.WithConstraints(make([]Constraint, 0))
 		}
 		params.Set(name, p)
 		position++
@@ -89,8 +88,7 @@ func parseSegments(template string) (segments []Segment, params *pvtypes.Ordered
 
 		// Add query parameters to combined params map
 		for name, p := range queryParams {
-			p.SetLocation(QueryLocation)
-			params.Set(name, p)
+			params.Set(name, p.WithLocation(QueryLocation))
 		}
 	}
 
@@ -356,8 +354,8 @@ func parsePathPart(pathPart string) (segments []Segment, params map[Identifier]P
 		if !segment.IsParameter() {
 			continue
 		}
-		segments[len(segments)-1].Parameters[0].SetPosition(position)
 		param = segment.Parameters[0]
+		segments[len(segments)-1].Parameters[0] = param.WithPosition(position)
 		// We currently only support one parameter per segment
 		params[param.Name] = param
 		position++
@@ -405,8 +403,7 @@ func parseQueryPart(queryPart string, startPosition int) (params map[Identifier]
 			)
 			goto end
 		}
-		param.SetPosition(position)
-		params[param.Name] = param
+		params[param.Name] = param.WithPosition(position)
 		position++
 	}
 

@@ -470,8 +470,8 @@ func TestCreativeDateFormats(t *testing.T) {
 				t.Errorf("Expected date value %q, got %q", tt.testVal, dateValue)
 			}
 
-			//t.Logf("✅ Pattern: %s", tt.regex)
-			//t.Logf("   Extracted: %s", dateValue)
+			// t.Logf("✅ Pattern: %s", tt.regex)
+			// t.Logf("   Extracted: %s", dateValue)
 		})
 	}
 }

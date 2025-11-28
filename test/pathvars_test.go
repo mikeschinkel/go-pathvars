@@ -73,7 +73,7 @@ func TestPathVars(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			req := httptest.NewRequest(tt.method, tt.path, nil)
 			result, err := router.Match(req)
-			//t.Log("Result:", result)
+			// t.Log("Result:", result)
 
 			hasError := err != nil
 

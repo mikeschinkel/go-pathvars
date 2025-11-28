@@ -167,8 +167,7 @@ func ParseConstraints(spec string, dataType PVDataType) (constraints []Constrain
 			}
 			if ch == ',' || pos == last {
 				// Found end of constraint type without brackets (like "notempty")
-				var constraintEnd int
-				constraintEnd = pos
+				constraintEnd := pos
 				if ch == ',' {
 					constraintEnd--
 				}
@@ -368,11 +367,6 @@ func findRegexBoundaries(spec string) (start, end int) {
 		// Skip whitespace
 		for afterEnd < len(spec) && isWhitespace(spec[afterEnd]) {
 			afterEnd++
-		}
-		// If we find a comma, there might be another constraint
-		// The last ] we found is correct
-		if afterEnd < len(spec) && spec[afterEnd] == ',' {
-			// Keep the end position - it's the last ] before the comma
 		}
 	}
 

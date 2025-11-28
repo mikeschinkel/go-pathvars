@@ -8,7 +8,6 @@ import (
 type ConstraintMapKey string
 type ConstraintsMap map[ConstraintMapKey]Constraint
 
-var constraints = make([]Constraint, 0, 16) // 16 is a reasonable starting capacity
 var constraintsMap = make(ConstraintsMap)
 
 type DataTypeAliasMap = map[PVDataTypeSlug]PVDataTypeSlug

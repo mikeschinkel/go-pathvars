@@ -14,10 +14,6 @@ type ValuesMap struct {
 	*OrderedMap[Identifier, any]
 }
 
-func (vm ValuesMap) SetNil() {
-	vm.OrderedMap = nil
-}
-
 func (vm ValuesMap) IsNil() bool {
 	return vm.OrderedMap == nil
 }
@@ -31,7 +27,6 @@ func NewValuesMap(cap int) ValuesMap {
 func (vm ValuesMap) GetValues(names []Identifier) (values ValuesMap, notFound []Identifier) {
 	n := len(names)
 	values = NewValuesMap(n)
-	notFound = make([]Identifier, 0, n)
 
 	notFoundMap := make(map[Identifier]struct{}, len(names))
 	for _, name := range names {
