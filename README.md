@@ -1,4 +1,4 @@
-# go-pathvars
+# Pathvars for Go
 
 **Advanced URL path template parsing and routing for Go with rich type validation, extensible constraints, and developer-friendly error messages—zero dependencies, production-ready.**
 
@@ -6,9 +6,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/mikeschinkel/go-pathvars)](https://goreportcard.com/report/github.com/mikeschinkel/go-pathvars)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Why go-pathvars?
+## Why pathvars?
 
-Most Go routing libraries require verbose handler registration or lack type validation. **go-pathvars** provides:
+Most Go routing libraries require verbose handler registration or lack type validation. **pathvars** provides:
 
 - ✅ **Declarative routing** with templates like `GET /users/{id:int}/posts/{slug:slug:length[5..50]}`
 - ✅ **Rich type system** - 11+ built-in types with extensible validation
