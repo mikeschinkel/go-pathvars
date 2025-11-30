@@ -27,7 +27,7 @@ test-unit:
 
 # Run fuzz corpus regression tests
 test-corpus:
-	cd test && $(GO) test -v -run=TestFuzzCorpus
+	@cd test && $(GO) test -v -run=TestFuzzCorpus || exit 1
 
 # Run all tests
 test-all: test-unit test-corpus

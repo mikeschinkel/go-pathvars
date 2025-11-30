@@ -148,6 +148,7 @@ jobs:
           echo "" >> $GITHUB_OUTPUT
           git log ${PREV_TAG}..HEAD --pretty=format:"- [**%h**](${REPO_URL}/commit/%H) - %s (%an, %ar)" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
           echo "**Full Changelog**: ${REPO_URL}/compare/${PREV_TAG}...${{ inputs.version }}" >> $GITHUB_OUTPUT
        
           echo "EOF" >> $GITHUB_OUTPUT

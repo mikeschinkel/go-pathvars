@@ -45,14 +45,6 @@ jobs:
         working-directory: test
         run: GOEXPERIMENT=${{ env.GOEXPERIMENT }} go test -v -run=TestFuzzCorpus
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage.txt
-          flags: unittests
-          name: codecov-umbrella
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # Note: For extended fuzzing, use the manual workflow or run locally with:
   #   cd test && ./infinite-fuzz.sh
