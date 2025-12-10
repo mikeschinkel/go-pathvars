@@ -1,0 +1,16 @@
+{
+  "modules": {
+    "./": {
+      "name": "go-pathvars",
+      "role": [
+        "lib"
+      ]
+    },
+    "./test": {
+      "name": "test",
+      "role": [
+        "test"
+      ]
+    }
+  }
+}
